@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Apache Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+        }
+        #host_ip, #feedback, #listFeedback {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        thead tr th:first-child,
+        tbody tr td:first-child {
+        width: 4em;
+        min-width: 4em;
+        max-width: 4em;
+        word-break: break-all;
+        }
+    </style>
+
+    <!-- Include jQuery from CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Docker Demo with LAMP Stack</h1>
+    <!-- <p>Click the button below to make a GET request to fetch data from an flask api</p>
+    <button id="fetchDataBtn">Fetch Data</button>
+
+    <div id="result">
+        <h3>API Response:</h3>
+
+    </div> -->
+    <div id="host_ip">
+        <h3>Webserver Host IP : <span id="hostIP"></span></h3>
+        <h3>Backend Api : <span id="backendAPI"></span>:<span id="backendPort"></span></h3>
+
+    </div>
+
+    <div id="feedback">
+        <h3>Feedback:</h3>
+        <input type="text" id="name" placeholder="name" />
+        <input type="text" id="feedbackInput" placeholder="Enter how you feel." />
+        <pre id="response">No data yet...</pre>
+    </div>
+
+    <div id="listFeedback">
+        <h3>All Feedbacks :</h3>
+        <table id="data-table" border="1">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>User</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+
+        function buildTable(dataArray){
+            const tableBody = document.querySelector('#data-table tbody');
+            
+            // Clear existing rows if any
+            tableBody.innerHTML = '';
+
+            // Loop through the array and add table rows
+            dataArray.forEach(item => {
+                // Create a new row
+                const row = document.createElement('tr');
+
+                // Create cells for each column
+                const idCell = document.createElement('td');
+                const nameCell = document.createElement('td');
+                const feedbackCell = document.createElement('td');
+
+                // Fill the cells with data
+                idCell.textContent = item.id;
+                nameCell.textContent = item.name;
+                feedbackCell.textContent = item.feedback;
+
+                // Append the cells to the row
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                row.appendChild(feedbackCell);
+
+                // Append the row to the table body
+                tableBody.appendChild(row);
+            });
+
+        }
+        //(data => buildTable(data.data.table))
+        function getData(backendApi,backendPort){
+            fetch('http://'+backendApi+':'+backendPort+'/api/feedback') // Replace with your API endpoint
+                    .then(response => response.json())  // Parse the JSON data
+                    .then(data => buildTable(data.data.table)) // Build table
+                    .catch(error => console.error('Error fetching data:', error));
+        }
+        
+        $(document).ready(function(){
+            let hostIP = null;
+            let backendApi = null;
+            let backendPort = null;
+
+            fetch('/hostip')  // Fetch the host ip from the server
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('hostIP').textContent = data;
+                    hostIP = data;
+            });
+            fetch('/backendapi')  // Fetch the host ip from the server
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('backendAPI').textContent = data;
+                    backendApi = data;
+            });
+            fetch('/backendport')  // Fetch the host ip from the server
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('backendPort').textContent = data;
+                    backendPort = data;
+            });
+            setTimeout(function() {
+                getData(backendApi,backendPort);
+            }, 1000);
+
+  
+            $('#feedbackInput').on('keydown', function(event) {
+
+                // Check if the 'Enter' key (keyCode 13) was pressed
+                if (event.key === 'Enter') {
+                    event.preventDefault();  // Prevent the form from being submitted
+
+                    // Get the value from the input field
+                    const feedback = $('#feedbackInput').val();
+                    const name = $('#name').val();
+
+                    if (name == "name" || name === ""){
+                        alert("Please insert name!")
+                        return;
+                    }
+                    // Send a POST request using jQuery
+                    $.ajax({
+                        url: 'http://'+backendApi+':'+backendPort+'/api/feedback',  // URL of your Flask API endpoint
+                        type: 'POST',
+                        contentType: 'application/json',  // Send data as JSON
+                        data: JSON.stringify({ 'user': name, 'feedback': feedback }),  // Send name in the body
+                        success: function(data) {
+                            // Display the response in the HTML
+                            let postResp = "container id : "+data.container_id+" "+data.response 
+                            $('#response').text(postResp);
+                            getData(backendApi,backendPort);
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle errors
+                            console.error('Error:', error);
+                            $('#response').text('Error sending data.');
+                        }
+                    });
+
+                    // Optionally clear the input field
+                    $('#feedbackInput').val('');
+                    
+                }
+            });
+        });
+    </script>
+</body>
+</html>

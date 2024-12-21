@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome to the Training</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5em;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 1.5rem;
+            margin-bottom: 1.5em;
+            color: #2b2727;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, <span id="user-name"></span>!</h1>
+        <p>Are you excited to know what are you going to learn next?</p>
+    </div>
+    <script>
+        document.getElementById('user-name').textContent = 'User';  // Default user name
+        fetch('/user_name')  // Fetch the user name from the server
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('user-name').textContent = data || 'User';
+            });
+    </script>
+</body>
+</html>

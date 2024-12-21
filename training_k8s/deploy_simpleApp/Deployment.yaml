@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-env-deployment
+  namespace: dev
+  labels:
+    app: nginx-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-env
+  template:
+    metadata:
+      labels:
+        app: nginx-env
+    spec:
+      containers:
+      - name: nginx-env-container
+        image: nginx:alpine
+        env:
+        - name: APP_NAME
+          value: "nginx-env-app"
+        - name: APP_ENV
+          value: "production"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "server {
+                    listen 80;
+                    location / {
+                        default_type text/plain;
+                        return 200 'Environment Variables:\nAPP_NAME: $APP_NAME\nAPP_ENV: $APP_ENV\n';
+                    }
+                }" > /etc/nginx/conf.d/default.conf;
+            nginx -g 'daemon off;';k

@@ -1,0 +1,40 @@
+services:
+  apache:
+    #image: apache-demo-image:latest
+    container_name: apache-demo-container
+    build:
+        context: ./apache
+        args:
+            - NODE_ENV=local
+        dockerfile: Dockerfile
+    volumes:
+      - ./apache/pages:/usr/local/apache2/htdocs/ # Mount the script
+    environment: # Define an environment variable
+      - HOST_IP=192.168.0.22
+      - BACKEND_API=192.168.0.22
+      - BACKEND_PORT=5003
+    ports:  # Expose host port: container port
+      - "8080:80"
+    network_mode: bridge
+  python:
+    #image: python-demo-image:latest
+    container_name: python-demo-container
+    build:
+        context: ./python
+        args:
+            - NODE_ENV=local
+        dockerfile: Dockerfile
+    volumes:
+      - ./python/backend_api:/app # Mount the script
+    environment: # Define an environment variable
+      - dbTable=users_feedback
+      - dbHost=192.168.0.22
+      - dbName=demo_mysql
+      - dbUser=mysql-admin
+      - dbPass=mysql-password
+    ports:  # Expose host port: container port
+      - "5003:5000"
+    network_mode: bridge
+
+
+
